@@ -24,6 +24,15 @@ response = client.chat.completions.create(model="openrouter/free", messages=[
 ] 
 )
 
+# printing the hard-coded user prompt
+print("User prompt: Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.")
+
+# printing the number of tokens used after checking if it is not None
+if response.usage == None:
+    raise RuntimeError("no Tokens used, check api key")
+
+print(f"Prompt tokens: {response.usage.prompt_tokens}\nResponse tokens: {response.usage.completion_tokens}")
+
 # printing the models response on the terminal
 print(response.choices[0].message.content)
 
