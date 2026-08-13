@@ -1,4 +1,5 @@
 import os
+import argparse
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -9,23 +10,28 @@ api_key = os.environ.get("OPENROUTER_API_KEY")
 if api_key == None:
     raise RuntimeError("api key not found")
 
+# use the argparse module to convert a command-line input into a prompt
+parser = argparse.ArgumentParser(description="Chatbot")
+parser.add_argument("user_prompt", type=str, help="User prompt")
+args = parser.parse_args()
+
 # create a client
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=api_key,
  )
 
-# get a response from the model with a hard-coded prompt
+# get a response from the model with a hard-coded prompt from the command line
 response = client.chat.completions.create(model="openrouter/free", messages=[
     {
         "role": "user",
-        "content": "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
+        "content": args.user_prompt,
     }
 ] 
 )
 
 # printing the hard-coded user prompt
-print("User prompt: Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.")
+print(f"User prompt: {args.user_prompt}")
 
 # printing the number of tokens used after checking if it is not None
 if response.usage == None:
