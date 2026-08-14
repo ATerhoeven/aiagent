@@ -2,6 +2,7 @@ import os
 import argparse
 from dotenv import load_dotenv
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
 
 
 # load the api key and raise an Error if it does not exist
@@ -21,14 +22,13 @@ client = OpenAI(
     api_key=api_key,
  )
 
+# create a list of messages for storing the conversation
+messages: list[ChatCompletionMessageParam] = [
+    {"role": "user", "content": args.user_prompt},
+]
+
 # get a response from the model with a hard-coded prompt from the command line
-response = client.chat.completions.create(model="openrouter/free", messages=[
-    {
-        "role": "user",
-        "content": args.user_prompt,
-    }
-] 
-)
+response = client.chat.completions.create(model="openrouter/free", messages=messages, )
 
 # printing the hard-coded user prompt
 print(f"User prompt: {args.user_prompt}")
