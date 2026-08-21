@@ -1,4 +1,5 @@
 import os
+from openai.types.chat import ChatCompletionToolUnionParam
 
 def get_files_info(working_directory: str, directory: str = ".") -> str:
 
@@ -31,3 +32,21 @@ def get_files_info(working_directory: str, directory: str = ".") -> str:
         return f'Error: "{directory}" is not a directory'
     except:
         return f'Error: something went wrong, please check if {directory} is a valid directory and inside the permitted area'
+
+
+schema_get_files_info: ChatCompletionToolUnionParam = {
+    "type": "function",
+    "function": {
+        "name": "get_files_info",
+        "description": "Lists files in a specified directory relative to the working directory, providing file size and directory status",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "directory": {
+                    "type": "string",
+                    "description": "Directory path to list files from, relative to the working directory (default is the working directory itself)",
+                },
+            },
+        },
+    },
+}
