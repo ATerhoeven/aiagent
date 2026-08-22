@@ -1,4 +1,5 @@
 import os
+from openai.types.chat import ChatCompletionToolUnionParam
 
 def get_file_content(working_directory: str, file_path: str) -> str:
     try:
@@ -28,3 +29,20 @@ def get_file_content(working_directory: str, file_path: str) -> str:
 
     except:
         return f"Error: please check {file_path} again"
+
+schema_get_file_content: ChatCompletionToolUnionParam = {
+    "type": "function",
+    "function": {
+        "name": "get_file_content",
+        "description": "Lists the content of a file on a specified file path relative to the working directory, providing file content up to 10000 chracters and file status",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Path to the file to list content from, relative to the working directory",
+                },
+            },
+        },
+    },
+}

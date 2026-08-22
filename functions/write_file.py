@@ -1,4 +1,5 @@
 import os
+from openai.types.chat import ChatCompletionToolUnionParam
 
 def write_file(working_directory: str, file_path: str, content: str) -> str:
     try:
@@ -31,3 +32,24 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
 
     except:
         return f'Error: something went wrong, please check if {file_path} is a valid file and inside the permitted working directory'
+
+schema_write_file: ChatCompletionToolUnionParam = {
+    "type": "function",
+    "function": {
+        "name": "write_file",
+        "description": "Writes to a file on a specified file path relative to the working directory, checking the file path for validity and creating all parent directories if neccessary",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Path to the file to write to, relative to the working directory",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "content to write into the specified file"
+                }
+            },
+        },
+    },
+}

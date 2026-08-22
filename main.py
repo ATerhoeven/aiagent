@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolUnionParam
 from call_function import available_functions
+from config import system_prompt
 
 
 def main():
@@ -26,17 +27,7 @@ def main():
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
     )
-
-    # create a hard coded system prompt
-    system_prompt = """
-    You are a helpful AI coding agent.
-
-    When a user asks a question or makes a request, make a function call plan. You can perform the following operations:
-
-    - List files and directories
-
-    All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
-    """
+    
 
     # create a list of messages for storing the conversation
     messages: list[ChatCompletionMessageParam] = [

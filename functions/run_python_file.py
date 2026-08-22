@@ -1,5 +1,6 @@
 import os
 import subprocess
+from openai.types.chat import ChatCompletionToolUnionParam
 
 def run_python_file(
     working_directory: str, file_path: str, args: list[str] | None = None
@@ -53,3 +54,24 @@ def run_python_file(
     
     except:
         return f'Error: something went wrong, please check if {file_path} is a valid file and inside the permitted working directory'
+
+schema_run_python_file: ChatCompletionToolUnionParam = {
+    "type": "function",
+    "function": {
+        "name": "run_python_file",
+        "description": "Runs a python file on a specified file path relative to the working directory, after checking, if the file exists and is a python file",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Path to the python file to run, relative to the working directory",
+                },
+                "args": {
+                    "type": "array[string]",
+                    "description": "Array of strings that contain additional inputs for specified python files"
+                }
+            },
+        },
+    },
+}
