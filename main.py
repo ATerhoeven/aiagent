@@ -1,10 +1,10 @@
-import json
 import os
 import argparse
+from tabnanny import verbose
 from dotenv import load_dotenv
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolUnionParam
-from call_function import available_functions
+from call_function import available_functions, call_function
 from config import system_prompt
 
 
@@ -55,8 +55,14 @@ def main():
             # narrow down the type tool_call can have
             if tool_call.type != "function":
                 continue
-            function_args = json.loads(tool_call.function.arguments or "{}")
-            print(f"Calling function: {tool_call.function.name}({function_args})")
+
+            result_message = call_function(tool_call)
+            if len(result_message["content"]) == 0:
+                raise Exception("Error: returned content was empty")
+
+            if args.verbose:
+                print(f"-> {result_message['content']}")
+                
     else:
         print(message.content)
 
