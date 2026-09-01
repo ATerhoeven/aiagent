@@ -1,9 +1,10 @@
 import os
 import argparse
+import sys
 from tabnanny import verbose
 from dotenv import load_dotenv
 from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolUnionParam
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolMessageParam, ChatCompletionMessage
 from call_function import available_functions, call_function
 from config import system_prompt
 
@@ -28,43 +29,58 @@ def main():
         api_key=api_key,
     )
     
-
     # create a list of messages for storing the conversation
-    messages: list[ChatCompletionMessageParam] = [
+    messages: list[ChatCompletionMessageParam | ChatCompletionMessage | dict] = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": args.user_prompt},
     ]
 
-    # get a response from the model with a hard-coded prompt from the command line
-    response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=messages,
-        tools=available_functions,
-        )
+    # model-calling logic-loop
 
-    # printing metadata if the verbose flag is set after checking if usage is not None
-    if response.usage == None:
-        raise RuntimeError("no Tokens used, check api key")
-    if args.verbose:
-        print(f"User prompt: {args.user_prompt}\nPrompt tokens: {response.usage.prompt_tokens}\nResponse tokens: {response.usage.completion_tokens}")
+    for _ in range(20):
+        # call the model, handle responses, etc.
 
-    # grab the response in a message variable
-    message = response.choices[0].message
-    if message.tool_calls != None:
-        for tool_call in message.tool_calls:
-            # narrow down the type tool_call can have
-            if tool_call.type != "function":
-                continue
 
-            result_message = call_function(tool_call)
-            if len(result_message["content"]) == 0:
-                raise Exception("Error: returned content was empty")
+        # get a response from the model with a hard-coded prompt from the command line
+        response = client.chat.completions.create(
+            model="openrouter/free",
+            messages=messages, # type: ignore
+            tools=available_functions,
+            )
 
-            if args.verbose:
-                print(f"-> {result_message['content']}")
-                
-    else:
-        print(message.content)
+        # printing metadata if the verbose flag is set after checking if usage is not None
+        if response.usage == None:
+            raise RuntimeError("no Tokens used, check api key")
+        if args.verbose:
+            print(f"User prompt: {args.user_prompt}\nPrompt tokens: {response.usage.prompt_tokens}\nResponse tokens: {response.usage.completion_tokens}")
 
+        # grab the response in a message variable
+        message: ChatCompletionMessage = response.choices[0].message
+        # append the model's message to the messages list
+        messages.append(message)
+        
+        if message.tool_calls != None:
+            for tool_call in message.tool_calls:
+                # narrow down the type tool_call can have
+                if tool_call.type != "function":
+                    continue
+
+                result_message = call_function(tool_call)
+                if len(result_message["content"]) == 0:
+                    raise Exception("Error: returned content was empty")
+
+                # append the tool call to the messages list
+                messages.append(result_message)
+
+                if args.verbose:
+                    print(f"-> {result_message['content']}")
+          
+        else:
+            print(message.content)
+            return
+    sys.exit("Error: After 20 iterations, the model was not able to produce a resolution")
+
+
+        
 if __name__ == "__main__":
     main()
